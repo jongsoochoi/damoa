@@ -1,17 +1,12 @@
-require('dotenv').config();
 const express = require('express');
-/** Cross Origin Resource Sharing */
-const cors = require('cors');
-const app = express();
-
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-app.use(cors());
+const app = express();
 
-/** 땡땡 포트 번호 */
-const port = 3000
 
+// Start the server
+app.listen(3000, () => console.log('Server started on port 3000'));
 
 //특정 url HTML 받기
 const getHTML = async (pcode) => {
@@ -22,7 +17,6 @@ const getHTML = async (pcode) => {
   };
 };
 
-
 //HTML 파싱
 const parsing = async (pcode) => {
   const html = await getHTML(pcode);
@@ -31,22 +25,13 @@ const parsing = async (pcode) => {
   //다나와 최저가 저장
   const price = $('em[class=prc_c]', '.lwst_prc').html();
   console.log(price)
-
-  //다나와 이미지 src
-  const imgsrc = $('#baseImage').attr('src').split('?')[0].split('/img/')[1];
-  console.log(imgsrc);
-}
+  return price;
+};
 
 
-app.get('/', function (req, res) {
-  res.send(`Hello World`)
+// Endpoint to handle the URL request
+app.get('/crawl', async (req, res) => {
+  const pcode = req.query.pcode; // Get the pcode from the request query
+  const low_price = await parsing(pcode)
+  res.send(low_price)
 });
-
-app.get('/find', function (req, res) {
-  res.send(parsing(req.query.pcode).price)
-});
-
-app.listen(port, () => {
-    console.log(`Example app Listening on port ${port}`)
-});
-

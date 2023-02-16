@@ -33,5 +33,5 @@ const parsing = async (pcode) => {
 app.get('/crawl', async (req, res) => {
   const pcode = req.query.pcode; // Get the pcode from the request query
   const low_price = await parsing(pcode)
-  res.send(low_price)
+  res.json({price : low_price})
 });

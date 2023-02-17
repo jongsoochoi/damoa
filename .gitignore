@@ -1,13 +1,6 @@
+
 node_modules
 package-lock.json
-axios.js
-cheerio.js
-crawling_img.js
-crawling_info.js
-test.js
-test2.js
-test3.js
 image
+test
 .env
-index2.js
-index3.js

@@ -31,10 +31,27 @@ const parsing = async (pcode) => {
 };
 
 
+// 파라미터로 pcode(제품 코드) 입력 후 해당 url의 HTML 파싱 한 후 [ 해당 제품 당일 최저가 , 해당 제품 이미지 src ] return
+const make_pcode = async (p_url) => {
+  const pcode = p_url.split('code=')[1].split('&')[0]
+  console.log(pcode)
+  return pcode;
+};
+
+
+
 // pcode포함하여 get방식으로 요청시 
 app.get('/crawl', async (req, res) => {
   const pcode = req.query.pcode; // Get the pcode from the request query
   const [low_price, img_src]  = await parsing(pcode)
+
+  res.json({price : low_price, img_src : img_src})
+});
+
+// pcode포함하여 get방식으로 요청시 
+app.get('/crawl2', async (req, res) => {
+  const p_url = req.query.p_url; // Get the pcode from the request query
+  const [low_price, img_src]  = await parsing(make_pcode(p_url))
 
   res.json({price : low_price, img_src : img_src})
 });

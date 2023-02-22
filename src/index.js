@@ -44,7 +44,7 @@ const parsing = async (url) => {
 
 //  p_url를 포함하여 get방식으로 요청시
 app.get('/crawl', async (req, res) => {
-  const p_url = req.query.p_url; // Get the pcode from the request query
+  const p_url = "https://danawa.page.link/" + req.query.p_url; // Get the pcode from the request query
   const [name, low_price, img_src]  = await parsing(p_url)
 
   res.json({name: name ,price : low_price, img_src : img_src})

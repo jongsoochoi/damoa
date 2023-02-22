@@ -21,23 +21,31 @@ const parsing = async (url) => {
   const html = await getHTML(url);
   const $ = cheerio.load(html.data);
 
-  //다나와 최저가 저장
   
-  //다나와 이미지 src
+  // 제품 JSON
   const p_json = $('[type=application/ld+json]').html();
-  const name = $('id=productBlog-productName').html();
+
+  // 다나와 제품명 저장
+  const name = $('[id=productBlog-productName]').html();
+  // const name = "rr"
+
+  // 다나와 최저가 저장
   const price = JSON.parse(p_json).offers.lowPrice;
+
+  // 다나와 이미지 src 저장
   const img_src = JSON.parse(p_json).image[0];
+
+  console.log(name);
   console.log(price);
   console.log(img_src);
   
   return [name, price, img_src];
 };
 
-// pcode포함하여 get방식으로 요청시 
+//  p_url를 포함하여 get방식으로 요청시
 app.get('/crawl', async (req, res) => {
-  const url = req.query.url; // Get the pcode from the request query
-  const [name, low_price, img_src]  = await parsing(url)
+  const p_url = req.query.p_url; // Get the pcode from the request query
+  const [name, low_price, img_src]  = await parsing(p_url)
 
-  res.json({name: name ,price : low_price, img_src : img_src, })
+  res.json({name: name ,price : low_price, img_src : img_src})
 });

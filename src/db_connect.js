@@ -6,12 +6,6 @@ mongoose.connect(process.env.MONGO_URI, (err) => {
     else console.log('db error');
 });
 
-const prodInfoSchema = mongoose.Schema({
-    pcode: { type: Number, required: true, unique: true },
-    img_src: { type: String },
-    save_date: { type: Date, default: Date.now }
-});
-
 const Pro_Info = mongoose.model('prod_info', prodInfoSchema);
 
 const save_prod_info = (pcode, img_src) => {

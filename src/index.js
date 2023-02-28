@@ -38,14 +38,14 @@ const parsing = async (url) => {
   // const name = "rr"
 
   // 다나와 제품 코드 저장
-  const pcode = p_json.sku;
+  const pcode = Number(p_json.sku);
   // const pcode = "rr"
 
   // 다나와 최저가 저장
-  const price = p_json.offers.lowPrice;
+  const price = Number(p_json.offers.lowPrice);
 
   // 다나와 이미지 src 저장
-  const img_src = p_json.image[0];
+  const img_src = "https:" + p_json.image[0];
 
   return [name, pcode, price, img_src];
 };

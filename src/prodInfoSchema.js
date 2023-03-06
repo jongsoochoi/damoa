@@ -3,7 +3,7 @@ const moment = require('moment');
 
 const lowPriceSchema = new mongoose.Schema({
   date: { type: Number},
-  low_price: {type: Number},
+  low_price: {type: Number, unique: true},
   _id : false
 });
 

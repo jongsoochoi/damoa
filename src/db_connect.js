@@ -15,10 +15,11 @@ const save_prod_info = async (pro_info) => {
 
     const same_pcode = await Pro_info.findOne({ pcode : pro_info.pcode });
     console.log(same_pcode);
-
-    const prices = same_pcode.prices
-    prices.sort((a, b) => b.date - a.date);
-    console.log(prices);
+    if(same_pcode){
+        const prices = same_pcode.prices
+        prices.sort((a, b) => b.date - a.date);
+        console.log(prices);
+    }
 
     const today_date = Number(moment().format(`YYYYMMDD`));
     const today_lowprice = pro_info.prices[0].low_price;

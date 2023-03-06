@@ -14,6 +14,9 @@ mongoose.connect("mongodb://admin:15ad06min15@svc.sel3.cloudtype.app:32398/?auth
 const save_prod_info = async (pro_info) => {
 
     const same_pcode = await Pro_info.findOne().where('pcode').equals(pro_info.pcode).sort('low_price');
+    console.log(same_pcode);
+    const today_date = Number(moment().format(`YYYYMMDD`));
+    const today_lowprice = pro_info.prices[0].low_price;
 
     // pcode 일치가 없다면 전부 저장
     if(!same_pcode) {
@@ -25,13 +28,13 @@ const save_prod_info = async (pro_info) => {
         return pro_info;
 
     // pcode 일치하고 prices내 동일 date 없다면 가격 추가
-    } else if (same_pcode.prices[same_pcode.prices.length - 1].date != Number(moment().format(`YYYYMMDD`))){
+    } else if (same_pcode.prices[same_pcode.prices.length - 1].date != today_date){
 
         console.log(pro_info.pcode + "동일 pcode 있음, prices내 동일 date 없음")
 
-        await Pro_info.updateOne({pcode:pro_info.pcode},{$push: {prices : {low_price : pro_info.prices[0].low_price, date : Number(moment().format(`YYYYMMDD`))}}});
+        await Pro_info.updateOne({pcode:pro_info.pcode},{$push: {prices : {low_price : today_lowprice, date : today_date}}});
 
-        await pro_info.prices.push({low_price : pro_info.prices[0].low_price, date : Number(moment().format(`YYYYMMDD`))});
+        await pro_info.prices.push({low_price : today_lowprice , date : today_date});
 
         return pro_info;
 
@@ -51,7 +54,7 @@ const node_schedule = async () => {
     // 최신 가격 업데이트 시간
     const rule = new schedule.RecurrenceRule();
     rule.hour = 0;
-    rule.minute = 32;
+    rule.minute = 0;
 
     // 반복할 함수 입력
     schedule.scheduleJob(rule, async () =>  {
@@ -63,11 +66,9 @@ const node_schedule = async () => {
         all_pcode.forEach((value, index, array)=>{
             save_prod_info(value)
         })
-        
+
     console.log('데이터 최신화');
   });
-
-
 
 }
 

@@ -18,7 +18,7 @@ const save_prod_info = async (pro_info) => {
     // console.log("img_src : " + pro_info.img_src)
     // console.log("price : " + pro_info.prices[0].low_price)
 
-    const same_pcode = await Pro_info.findOne().where('pcode').equals(pro_info.pcode);
+    const same_pcode = await Pro_info.findOne().where('pcode').equals(pro_info.pcode).sort('low_price');
 
     // pcode 일치가 없다면 전부 저장
     if(!same_pcode) {
@@ -30,13 +30,13 @@ const save_prod_info = async (pro_info) => {
         return pro_info;
 
     // pcode 일치하고 prices내 동일 date 없다면 가격 추가
-    } else if (moment(same_pcode.prices[same_pcode.prices.length - 1].date).format(`YYYY-MM-DD`) != moment().format(`YYYY-MM-DD`)){
+    } else if (moment(same_pcode.prices[same_pcode.prices.length - 1].date).format(`YYYYMMDD`) != Number(moment().format(`YYYYMMDD`))){
 
         console.log(pro_info.pcode + "동일 pcode 있음, prices내 동일 date 없음")
 
-        await Pro_info.updateOne({pcode:pro_info.pcode},{$push: {prices : {low_price : pro_info.prices[0].low_price}}});
+        await Pro_info.updateOne({pcode:pro_info.pcode},{$push: {prices : {low_price : pro_info.prices[0].low_price, date : Number(moment().format(`YYYYMMDD`))}}});
 
-        await pro_info.prices.push({low_price : pro_info.prices[0].low_price, date : moment().format(`YYYY-MM-DD`)});
+        await pro_info.prices.push({low_price : pro_info.prices[0].low_price, date : Number(moment().format(`YYYYMMDD`))});
 
         return pro_info;
 

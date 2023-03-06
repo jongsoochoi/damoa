@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const moment = require('moment');
 
 const lowPriceSchema = new mongoose.Schema({
-  date: { type: Date, default: moment().format(`YYYY-MM-DD`)},
+  date: { type: Number},
   low_price: {type: Number},
   _id : false
 });

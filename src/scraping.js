@@ -49,7 +49,7 @@ const getHTML = async (url) => {
     pro_info.img_src = "https:" + p_json.image[0];
   
     // 다나와 최저가 저장
-    pro_info.prices.push({low_price : Number(p_json.offers.lowPrice), date : moment().format(`YYYY-MM-DD`)});
+    pro_info.prices.push({low_price : Number(p_json.offers.lowPrice), date : Number(moment().format(`YYYYMMDD`))});
 
     return pro_info;
   };

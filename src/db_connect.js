@@ -13,7 +13,7 @@ mongoose.connect("mongodb://admin:15ad06min15@svc.sel3.cloudtype.app:32398/?auth
 
 const save_prod_info = async (pro_info) => {
 
-    const same_pcode = await Pro_info.findOne().where('pcode').equals(pro_info.pcode).sort('low_price');
+    const same_pcode = await Pro_info.findOne({ pcode : pro_info.pcode }).sort({ 'prices.date': 1 });
     console.log(same_pcode);
     const today_date = Number(moment().format(`YYYYMMDD`));
     const today_lowprice = pro_info.prices[0].low_price;
@@ -40,8 +40,7 @@ const save_prod_info = async (pro_info) => {
 
     } else {
 
-        console.log(pro_info.pcode + "동일 pcode 있음, prices내 동일 date 있음")
-        // await Pro_info.updateOne({pcode:pro_info.pcode},{$push: {prices : {low_price : pro_info.prices[0].low_price, date : moment("2023-03-03").format(`YYYY-MM-DD`)}}});
+        console.log(pro_info.pcode + "동일 pcode 있음, prices내 동일 date 있음");
         return same_pcode;
     }
 

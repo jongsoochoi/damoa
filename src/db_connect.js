@@ -15,8 +15,9 @@ const save_prod_info = async (pro_info) => {
 
     const same_pcode = await Pro_info.findOne({ pcode : pro_info.pcode });
     console.log(same_pcode);
+    let prices=[];
     if(same_pcode){
-        const prices = same_pcode.prices
+        prices = same_pcode.prices
         prices.sort((a, b) => b.date - a.date);
         console.log(prices);
     }
@@ -34,7 +35,7 @@ const save_prod_info = async (pro_info) => {
         return pro_info;
 
     // pcode 일치하고 prices내 동일 date 없다면 가격 추가
-    } else if (same_pcode.prices[0].date != today_date){
+    } else if (prices[0].date != today_date){
 
         console.log(pro_info.pcode + "동일 pcode 있음, prices내 동일 date 없음")
 

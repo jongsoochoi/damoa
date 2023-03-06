@@ -14,7 +14,6 @@ mongoose.connect("mongodb://admin:15ad06min15@svc.sel3.cloudtype.app:32398/?auth
 const save_prod_info = async (pro_info) => {
 
     const same_pcode = await Pro_info.findOne({ pcode : pro_info.pcode });
-    console.log(same_pcode);
     let prices=[];
     if(same_pcode){
         prices = same_pcode.prices
@@ -24,20 +23,24 @@ const save_prod_info = async (pro_info) => {
 
     const today_date = Number(moment().format(`YYYYMMDD`));
     const today_lowprice = pro_info.prices[0].low_price;
+    // const today_date = 20230302;
+    // const today_lowprice = 10000;
 
     // pcode 일치가 없다면 전부 저장
     if(!same_pcode) {
         
-        console.log(pro_info.pcode + "동일 pcode 없음")
+        console.log(pro_info.pcode + " 동일 pcode 없음")
     
         await pro_info.save();
 
         return pro_info;
 
     // pcode 일치하고 prices내 동일 date 없다면 가격 추가
-    } else if (prices[0].date != today_date){
+    } else if (!prices.find(obj => obj.date === today_date)){
 
-        console.log(pro_info.pcode + "동일 pcode 있음, prices내 동일 date 없음")
+        console.log(pro_info.pcode + " 동일 pcode 있음, prices내 동일 date 없음")
+        console.log(prices[0].date)
+        console.log(today_date)
 
         await Pro_info.updateOne({pcode:pro_info.pcode},{$push: {prices : {low_price : today_lowprice, date : today_date}}});
 
@@ -47,7 +50,7 @@ const save_prod_info = async (pro_info) => {
 
     } else {
 
-        console.log(pro_info.pcode + "동일 pcode 있음, prices내 동일 date 있음");
+        console.log(pro_info.pcode + " 동일 pcode 있음, prices내 동일 date 있음");
         return same_pcode;
     }
 

@@ -12,7 +12,7 @@ const prodInfoSchema = new mongoose.Schema({
   // pcode: { type: Number, required: true},
   name: { type: String, required: true},
   img_src: { type: String, required: true},
-  save_date: { type: Date, default: moment().format(`YYYY-MM-DD`)},
+  save_date: { type: Date, default: Date.now},
   prices: [lowPriceSchema],
 });
 

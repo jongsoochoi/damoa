@@ -62,7 +62,7 @@ const node_schedule = async () => {
 
     // 최신 가격 업데이트 시간
     const rule = new schedule.RecurrenceRule();
-    rule.hour = 0;
+    rule.hour = 9;
     rule.minute = 0;
 
     // 반복할 함수 입력

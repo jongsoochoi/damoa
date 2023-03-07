@@ -23,3 +23,13 @@ app.get('/crawl', async (req, res) => {
 
   res.json(await db_connect.save_prod_info(pro_info));
 });
+
+//  p_url를 포함하여 get방식으로 요청시
+app.get('/add', async (req, res) => {
+  const pro_info  = await scraping.parsing(req.query.pcode, req.query.p_url);
+
+  // const get_data = await db_connect.get_prod_info(pcode, name, img_src, price);
+  // console.log("index : " + get_data)
+
+  res.json({pcode : pro_info.pcode, name: pro_info.name, img_src : pro_info.img_src , price : pro_info.prices[0].low_price});
+});

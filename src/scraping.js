@@ -57,7 +57,4 @@ const getHTML = async (url) => {
     return pro_info;
   };
 
-
-
-  
 module.exports.parsing = parsing;

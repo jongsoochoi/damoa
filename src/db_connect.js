@@ -62,8 +62,8 @@ const node_schedule = async () => {
 
     // 최신 가격 업데이트 시간
     const rule = new schedule.RecurrenceRule();
-    rule.hour = 9;
-    rule.minute = 0;
+    rule.hour = 4;
+    rule.minute = 25;
 
     // 반복할 함수 입력
     schedule.scheduleJob(rule, async () =>  {
@@ -80,7 +80,6 @@ const node_schedule = async () => {
   });
 
 }
-
 
 module.exports.save_prod_info = save_prod_info;
 module.exports.node_schedule = node_schedule;

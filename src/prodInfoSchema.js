@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const moment = require('moment');
 
 const lowPriceSchema = new mongoose.Schema({
-  date: { type: Number},
-  low_price: {type: Number, unique: true},
+  date: { type: Number, unique: true},
+  low_price: {type: Number},
   _id : false
 });
 

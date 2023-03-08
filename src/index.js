@@ -16,9 +16,6 @@ db_connect.node_schedule();
 app.get('/crawl', async (req, res) => {
   const pro_info  = await scraping.parsing(req.query.pcode, req.query.p_url);
 
-  // const get_data = await db_connect.get_prod_info(pcode, name, img_src, price);
-  // console.log("index : " + get_data)
-
   res.json(await db_connect.save_prod_info(pro_info));
 });
 

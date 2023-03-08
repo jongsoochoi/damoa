@@ -48,6 +48,7 @@ const save_prod_info = async (pro_info) => {
 
         return pro_info;
 
+    // pcode 일치하고 prices내 동일 date 있을때
     } else {
 
         console.log(pro_info.pcode + " 동일 pcode 있음, prices내 동일 date 있음");
@@ -55,8 +56,6 @@ const save_prod_info = async (pro_info) => {
     }
 
 };
-
-
 
 const node_schedule = async () => {
 

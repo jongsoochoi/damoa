@@ -5,14 +5,14 @@ const moment = require('moment');
 const schedule = require('node-schedule');
 
 mongoose.set('strictQuery', false);
-mongoose.connect("mongodb://admin:15ad06min15@svc.sel3.cloudtype.app:32398/?authMechanism=DEFAULT", (err) => {
-// mongoose.connect(process.env.MONGO_URI, (err) => {
+mongoose.connect(process.env.MONGO_URI, (err) => {
     if(!err) console.log('db connected');
     else console.log('db error');
 });
 
 const save_prod_info = async (pro_info) => {
 
+    // 크롤링한 정보(pro_info)에서 pcode
     const same_pcode = await Pro_info.findOne({ pcode : pro_info.pcode });
     let prices=[];
     if(same_pcode){

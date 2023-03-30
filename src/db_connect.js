@@ -17,10 +17,8 @@ async function save_prod_info(pro_info) {
     // 크롤링한 정보(pro_info)에서 pcode와 동일한 값을 조회
     const same_pcode = await Pro_info.findOne({ pcode: pro_info.pcode });
 
-    // const today_date = pro_info.prices[0].date;
-    // const today_lowprice = pro_info.prices[0].low_price;
-    const today_date = 20230331;
-    const today_lowprice = 10121;
+    const today_date = pro_info.prices[0].date;
+    const today_lowprice = pro_info.prices[0].low_price;
 
     if (!same_pcode) {
         console.log('최초 데이터와 테스트 데이터 입력');

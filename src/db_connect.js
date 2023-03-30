@@ -42,7 +42,7 @@ async function save_prod_info(pro_info) {
         console.log('최신 날짜 가격 변경');
 
         // pcode 일치하고 prices내 동일 date 없다면 가격 추가
-        const filter = { "prices.date": today_date };
+        const filter = { pcode: pro_info.pcode,"prices.date": today_date };
         const update = { $set: { "prices.$.low_price": today_lowprice }}; //prices 최신 데이터 앞에 저장
         const options = { new: true }; // 업데이트된 문서를 반환합니다.
 

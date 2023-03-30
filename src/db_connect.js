@@ -3,57 +3,55 @@ const mongoose = require('mongoose');
 const Pro_info = require(`./prodInfoSchema.js`);
 const moment = require('moment');
 const schedule = require('node-schedule');
+const test_datas = require(`./test_datas.js`);
 
 mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGO_URI, (err) => {
-    if(!err) console.log('db connected');
+    if (!err) console.log('db connected');
     else console.log('db error');
 });
 
-const save_prod_info = async (pro_info) => {
+//크롤링한 데이터를 저장할지 정하는 메소드
+async function save_prod_info(pro_info) {
 
-    // 크롤링한 정보(pro_info)에서 pcode
-    const same_pcode = await Pro_info.findOne({ pcode : pro_info.pcode });
-    let prices=[];
-    if(same_pcode){
-        prices = same_pcode.prices
-        prices.sort((a, b) => b.date - a.date);
-        console.log(prices);
-    }
+    // 크롤링한 정보(pro_info)에서 pcode와 동일한 값을 조회
+    const same_pcode = await Pro_info.findOne({ pcode: pro_info.pcode });
 
-    const today_date = Number(moment().add(9,'hours').format(`YYYYMMDD`));
+    const today_date = pro_info.prices[0].date;
     const today_lowprice = pro_info.prices[0].low_price;
-    // const today_date = 20230302;
-    // const today_lowprice = 10000;
 
-    // pcode 일치가 없다면 전부 저장
-    if(!same_pcode) {
-        
-        console.log(pro_info.pcode + " 동일 pcode 없음")
-    
-        await pro_info.save();
+    if (!same_pcode) {
+
+        const new_prod_info = new Pro_info({
+            pcode: pro_info.pcode,
+            name: pro_info.name,
+            img_src: pro_info.img_src,
+            prices: pro_info.prices,
+        });
+
+        // 테스트용 데이터 입력
+        new_prod_info.prices = test_datas.input_test_data(new_prod_info.prices)
+
+        // 인접한 데이터의 low_price가 같다면 date를 비교해서 작은 date 값을 가지고 있는 것만 남긴다 
+        new_prod_info.prices = test_datas.removeDuplicatePrices(new_prod_info.prices);
+
+        await new_prod_info.save();
 
         return pro_info;
 
-    // pcode 일치하고 prices내 동일 date 없다면 가격 추가
-    } else if (!prices.find(obj => obj.date === today_date)){
+    } else if (today_lowprice !== same_pcode.prices[0].low_price) {
 
-        await Pro_info.updateOne({pcode:pro_info.pcode},{$push: {prices : {low_price : today_lowprice, date : today_date}}});
+        // pcode 일치하고 prices내 동일 date 없다면 가격 추가
+        const filter = { pcode: pro_info.pcode };
+        const update = { $push: { prices: { $each: [{ date: today_date, low_price: today_lowprice }], $position: 0 } } }; //prices 최신 데이터 앞에 저장
+        const options = { new: true }; // 업데이트된 문서를 반환합니다.
 
-        await pro_info.prices.push({low_price : today_lowprice , date : today_date});
-
-        return pro_info;
-
-    // pcode 일치하고 prices내 동일 date 있을때
-    } else {
-
-        console.log(pro_info.pcode + " 동일 pcode 있음, prices내 동일 date 있음");
-        return same_pcode;
-    }
-
+        return await Pro_info.updateOne(filter, update, options);
+    };
+    return pro_info;
 };
 
-const node_schedule = async () => {
+function node_schedule() {
 
     // 최신 가격 업데이트 시간 (서버시간이 9시간 느림)
     const rule = new schedule.RecurrenceRule();
@@ -61,20 +59,21 @@ const node_schedule = async () => {
     rule.minute = 0;
 
     // 반복할 함수 입력
-    schedule.scheduleJob(rule, async () =>  {
+    schedule.scheduleJob(rule, async () => {
 
         // 제품 정보페이지를 저장
         const all_pcode = await Pro_info.find();
 
         // 제품마다 가격 최신화 실행
-        all_pcode.forEach((value, index, array)=>{
+        all_pcode.forEach((value, index, array) => {
             save_prod_info(value)
         })
 
-    console.log('데이터 최신화');
-  });
+        console.log('데이터 최신화');
+    });
 
 }
+
 
 module.exports.save_prod_info = save_prod_info;
 module.exports.node_schedule = node_schedule;

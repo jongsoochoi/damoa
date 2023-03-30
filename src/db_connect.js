@@ -46,7 +46,7 @@ async function save_prod_info(pro_info) {
         const update = { $set: { "prices.$.low_price": today_lowprice }}; //prices 최신 데이터 앞에 저장
         const options = { new: true }; // 업데이트된 문서를 반환합니다.
 
-        return await Pro_info.updateOne(filter, update, options);
+        return await Pro_info.findOneAndUpdate(filter, update, options);
     } else if (today_lowprice !== same_pcode.prices[0].low_price) {
         console.log('최신 날짜 가격 추가');
 
@@ -55,7 +55,7 @@ async function save_prod_info(pro_info) {
         const update = { $push: { prices: { $each: [{ date: today_date, low_price: today_lowprice }], $position: 0 } } }; //prices 최신 데이터 앞에 저장
         const options = { new: true }; // 업데이트된 문서를 반환합니다.
 
-        return await Pro_info.updateOne(filter, update, options);
+        return await Pro_info.findOneAndUpdate(filter, update, options);
     };
     return pro_info;
 };

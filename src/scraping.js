@@ -51,9 +51,6 @@ const getHTML = async (url) => {
     // 다나와 최저가 저장
     pro_info.prices.push({low_price : Number(p_json.offers.lowPrice), date : Number(moment().add(9, 'hours').format(`YYYYMMDD`))});
 
-    
-    console.log("parsing : " + pro_info)
-
     return pro_info;
   };
 

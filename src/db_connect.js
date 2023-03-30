@@ -17,11 +17,14 @@ async function save_prod_info(pro_info) {
     // 크롤링한 정보(pro_info)에서 pcode와 동일한 값을 조회
     const same_pcode = await Pro_info.findOne({ pcode: pro_info.pcode });
 
-    const today_date = pro_info.prices[0].date;
-    const today_lowprice = pro_info.prices[0].low_price;
+    // const today_date = pro_info.prices[0].date;
+    // const today_lowprice = pro_info.prices[0].low_price;
+    const today_date = 20230331;
+    const today_lowprice = 10121;
 
     if (!same_pcode) {
-
+        console.log('최초 데이터와 테스트 데이터 입력');
+        
         const new_prod_info = new Pro_info({
             pcode: pro_info.pcode,
             name: pro_info.name,
@@ -35,11 +38,19 @@ async function save_prod_info(pro_info) {
         // 인접한 데이터의 low_price가 같다면 date를 비교해서 작은 date 값을 가지고 있는 것만 남긴다 
         new_prod_info.prices = test_datas.removeDuplicatePrices(new_prod_info.prices);
 
-        await new_prod_info.save();
+        return await new_prod_info.save();
 
-        return pro_info;
+    } else if ( same_pcode.prices[0].date === today_date && today_lowprice < same_pcode.prices[0].low_price) {
+        console.log('최신 날짜 가격 변경');
 
+        // pcode 일치하고 prices내 동일 date 없다면 가격 추가
+        const filter = { "prices.date": today_date };
+        const update = { $set: { "prices.$.low_price": today_lowprice }}; //prices 최신 데이터 앞에 저장
+        const options = { new: true }; // 업데이트된 문서를 반환합니다.
+
+        return await Pro_info.updateOne(filter, update, options);
     } else if (today_lowprice !== same_pcode.prices[0].low_price) {
+        console.log('최신 날짜 가격 추가');
 
         // pcode 일치하고 prices내 동일 date 없다면 가격 추가
         const filter = { pcode: pro_info.pcode };

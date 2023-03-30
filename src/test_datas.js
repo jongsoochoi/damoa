@@ -1,6 +1,3 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-const Pro_info = require(`./prodInfoSchema.js`);
 const moment = require('moment');
 
 //테스트용 가격 입력

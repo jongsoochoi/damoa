@@ -57,7 +57,7 @@ async function save_prod_info(pro_info) {
 
         return await Pro_info.findOneAndUpdate(filter, update, options);
     };
-    return pro_info;
+    return same_pcode;
 };
 
 function node_schedule() {

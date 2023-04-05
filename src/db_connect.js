@@ -64,7 +64,6 @@ function node_schedule() {
 
     // 최신 가격 업데이트 시간 (서버시간이 9시간 느림)
     const rule = new schedule.RecurrenceRule();
-    rule.hour = 15;
     rule.minute = 0;
 
     // 반복할 함수 입력

@@ -74,7 +74,7 @@ function node_schedule() {
         const all_pcode = await Pro_info.find();
 
         // 제품마다 가격 최신화 실행
-        all_pcode.forEach((value) => {
+        all_pcode.forEach(async(value) => {
             save_prod_info(scraping.parsing(value.pcode))
         })
 

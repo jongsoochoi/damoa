@@ -1,7 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const Pro_info = require(`./prodInfoSchema.js`);
-const moment = require('moment');
 const schedule = require('node-schedule');
 const test_datas = require(`./test_datas.js`);
 
@@ -38,24 +37,25 @@ async function save_prod_info(pro_info) {
 
         return await new_prod_info.save();
 
-    } else if ( same_pcode.prices[0].date === today_date && today_lowprice < same_pcode.prices[0].low_price) {
-        console.log('최신 날짜 가격 변경');
+    // } else if ( same_pcode.prices[0].date === today_date && today_lowprice < same_pcode.prices[0].low_price) {
+    } else if ( today_date === same_pcode.prices.slice(-1)[0].date && today_lowprice < same_pcode.prices.slice(-1)[0].low_price ) {
+        console.log('동일 날짜에 최저가 갱신');
 
         // pcode 일치하고 prices내 동일 date 없다면 가격 추가
-        const filter = { pcode: pro_info.pcode,"prices.date": today_date };
-        const update = { $set: { "prices.$.low_price": today_lowprice }}; //prices 최신 데이터 앞에 저장
-        const options = { new: true }; // 업데이트된 문서를 반환합니다.
+        const filter = { pcode: pro_info.pcode};
+        const update = { $set: { "prices.$[elem].low_price": today_lowprice } }; //prices 최신 데이터 앞에 저장
+        const options = { new: true, arrayFilters: [ { "elem.date": today_date } ]}; // 문서를 반환합니다.
 
         return await Pro_info.findOneAndUpdate(filter, update, options);
-    } else if (today_lowprice !== same_pcode.prices[0].low_price) {
-        console.log('최신 날짜 가격 추가');
+    } else if (today_date > same_pcode.prices.slice(-1)[0].date && today_lowprice !== same_pcode.prices.slice(-1)[0].low_price) {
+        console.log('최저가 변화로 인하여 신규 날짜와 최저가 입력');
 
-        // pcode 일치하고 prices내 동일 date 없다면 가격 추가
-        const filter = { pcode: pro_info.pcode };
-        const update = { $push: { prices: { $each: [{ date: today_date, low_price: today_lowprice }], $position: 0 } } }; //prices 최신 데이터 앞에 저장
-        const options = { new: true }; // 업데이트된 문서를 반환합니다.
+        const filter = { pcode: pro_info.pcode};
+        const update = { $push: { "prices": {low_price : today_lowprice, date : today_date} } }; //prices 최신 데이터 앞에 저장
+        const options = { new: true, upsert: true}; // 문서를 반환합니다.
 
         return await Pro_info.findOneAndUpdate(filter, update, options);
+
     };
     return same_pcode;
 };
@@ -74,7 +74,7 @@ function node_schedule() {
         const all_pcode = await Pro_info.find();
 
         // 제품마다 가격 최신화 실행
-        all_pcode.forEach((value, index, array) => {
+        all_pcode.forEach((value) => {
             save_prod_info(value)
         })
 

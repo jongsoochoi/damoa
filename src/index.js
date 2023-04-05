@@ -1,4 +1,6 @@
 const express = require('express');
+const cors = require('cors');
+
 const db_connect = require('./db_connect.js');
 const scraping = require('./scraping.js');
 const test_datas = require(`./test_datas.js`);
@@ -8,6 +10,7 @@ const Pro_info = require(`./prodInfoSchema.js`);
 
 
 const app = express();
+app.use(cors());
 
 // Start the server
 app.listen(3000, () => console.log('Server started on port 3000'));

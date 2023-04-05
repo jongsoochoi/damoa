@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Pro_info = require(`./prodInfoSchema.js`);
 const schedule = require('node-schedule');
 const test_datas = require(`./test_datas.js`);
+const scraping = require('./scraping.js');
 
 mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGO_URI, (err) => {
@@ -74,14 +75,13 @@ function node_schedule() {
 
         // 제품마다 가격 최신화 실행
         all_pcode.forEach((value) => {
-            save_prod_info(value)
+            save_prod_info(scraping.parsing(value.pcode))
         })
 
         console.log('데이터 최신화');
     });
 
 }
-
 
 module.exports.save_prod_info = save_prod_info;
 module.exports.node_schedule = node_schedule;

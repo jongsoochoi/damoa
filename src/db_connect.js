@@ -1,90 +1,49 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-const Pro_info = require(`./prodInfoSchema.js`);
-const schedule = require('node-schedule');
 const test_datas = require(`./test_datas.js`);
-const scraping = require('./scraping.js');
-
-mongoose.set('strictQuery', false);
-mongoose.connect(process.env.MONGO_URI, (err) => {
-    if (!err) console.log('db connected');
-    else console.log('db error');
-});
+const dbModel = require('./dbModel.js');
+const sorting_prices = require(`./sorting_prices.js`);
 
 //크롤링한 데이터를 저장할지 정하는 메소드
 async function save_prod_info(pro_info) {
-
+    
     // 크롤링한 정보(pro_info)에서 pcode와 동일한 값을 조회
-    const same_pcode = await Pro_info.findOne({ pcode: pro_info.pcode });
+    const same_pcode_pro_info = await dbModel.findOneProdinfo( pro_info.pcode)
 
     const today_date = pro_info.prices[0].date;
     const today_lowprice = pro_info.prices[0].low_price;
 
-    if (!same_pcode) {
+    if (!same_pcode_pro_info) { // same_pcode_pro_info가 없다면
+
         console.log('최초 데이터와 테스트 데이터 입력');
         
-        const new_prod_info = new Pro_info({
-            pcode: pro_info.pcode,
-            name: pro_info.name,
-            img_src: pro_info.img_src,
-            prices: pro_info.prices,
-        });
-
         // 테스트용 데이터 입력
-        new_prod_info.prices = test_datas.input_test_data(new_prod_info.prices)
+        pro_info.prices = test_datas.input_test_data(pro_info.prices)
 
         // 인접한 데이터의 low_price가 같다면 date를 비교해서 작은 date 값을 가지고 있는 것만 남긴다 
-        new_prod_info.prices = test_datas.removeDuplicatePrices(new_prod_info.prices);
+        pro_info.prices = sorting_prices.removeDuplicatePrices(pro_info.prices);
 
-        return await new_prod_info.save();
+        return await dbModel.saveProdinfo(pro_info);
+        
+    // 오늘 날짜 , DB문서 최신 날짜 가 같고
+    // 오늘 최저 가격이 DB문서 최신 가격보다 작다면
+    } else if ( today_date === same_pcode_pro_info.prices.slice(-1)[0].date && today_lowprice < same_pcode_pro_info.prices.slice(-1)[0].low_price ) { 
+        
+        console.log(`${today_date} ${same_pcode_pro_info.prices.slice(-1)[0].low_price} >> ${today_lowprice} 최저가 변경`)
+        same_pcode_pro_info.prices.splice(-1, 1, {date : today_date , low_price : today_lowprice});
 
-    // } else if ( same_pcode.prices[0].date === today_date && today_lowprice < same_pcode.prices[0].low_price) {
-    } else if ( today_date === same_pcode.prices.slice(-1)[0].date && today_lowprice < same_pcode.prices.slice(-1)[0].low_price ) {
-        console.log('동일 날짜에 최저가 갱신');
-        console.log(`날짜 : ${today_date}, 최저가 : ${today_lowprice}`);
+        return dbModel.saveProdinfo(same_pcode_pro_info);
 
-        // pcode 일치하고 prices내 동일 date 없다면 가격 추가
-        const filter = { pcode: pro_info.pcode};
-        const update = { $set: { "prices.$[elem].low_price": today_lowprice } }; //prices 최신 데이터 앞에 저장
-        const options = { new: true, arrayFilters: [ { "elem.date": today_date } ]}; // 문서를 반환합니다.
+    // 오늘 날짜 , DB문서 최신 날짜 더 최신이고
+    // 오늘 최저 가격이 DB문서 최신 가격 다르다면
+    } else if (today_date > same_pcode_pro_info.prices.slice(-1)[0].date && today_lowprice !== same_pcode_pro_info.prices.slice(-1)[0].low_price) {
 
-        return await Pro_info.findOneAndUpdate(filter, update, options);
-    } else if (today_date > same_pcode.prices.slice(-1)[0].date && today_lowprice !== same_pcode.prices.slice(-1)[0].low_price) {
-        console.log('최저가 변화로 인하여 신규 날짜와 최저가 입력');
-        console.log(`날짜 : ${today_date}, 최저가 : ${today_lowprice}`);
+        console.log(`${today_date} ${today_lowprice} 최저가 추가`)
+        same_pcode_pro_info.prices.push({date : today_date , low_price : today_lowprice});
 
-        const filter = { pcode: pro_info.pcode};
-        const update = { $push: { "prices": {low_price : today_lowprice, date : today_date} } }; //prices 최신 데이터 앞에 저장
-        const options = { new: true, upsert: true}; // 문서를 반환합니다.
-
-        return await Pro_info.findOneAndUpdate(filter, update, options);
-
+        return dbModel.saveProdinfo(same_pcode_pro_info);
     };
-    return same_pcode;
+
+    return same_pcode_pro_info;
 };
-
-function node_schedule() {
-
-    // 최신 가격 업데이트 시간 (서버시간이 9시간 느림)
-    const rule = new schedule.RecurrenceRule();
-    rule.minute = 0;
-
-    // 반복할 함수 입력
-    schedule.scheduleJob(rule, async () => {
-
-        // 제품 정보페이지를 저장
-        const all_pcode = await Pro_info.find();
-
-        // 제품마다 가격 최신화 실행
-        all_pcode.forEach(async (value) => {
-            save_prod_info(await scraping.parsing(value.pcode, null));
-        })
-
-        console.log('데이터 최신화');
-    });
-
-}
 
 
 module.exports.save_prod_info = save_prod_info;
-module.exports.node_schedule = node_schedule;
